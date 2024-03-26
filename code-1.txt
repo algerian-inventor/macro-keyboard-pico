@@ -1,0 +1,71 @@
+
+
+import time
+import board
+import digitalio
+import usb_hid
+from adafruit_hid.keycode import Keycode
+from adafruit_hid.keyboard import Keyboard
+from adafruit_hid.keyboard_layout_us import KeyboardLayoutUS
+from adafruit_hid.consumer_control import ConsumerControl
+from adafruit_hid.consumer_control_code import ConsumerControlCode
+
+# Set up Consumer Control - Control Codes can be found here: https://docs.circuitpython.org/projects/hid/en/latest/_modules/adafruit_hid/consumer_control_code.html#ConsumerControlCode
+cc = ConsumerControl(usb_hid.devices)
+
+# Set up a keyboard device. - Keycode can be found here: https://docs.circuitpython.org/projects/hid/en/latest/_modules/adafruit_hid/keycode.html#Keycode
+keyboard = Keyboard(usb_hid.devices)
+
+# Set up keyboard to write strings from macro
+write_text = KeyboardLayoutUS(keyboard)
+
+# These are the corresponding GPIOs on the Pi Pico that is used for the Keys on the PCB
+buttons = [board.GP0, board.GP1,board.GP2,board.GP3,board.GP4,board.GP5,board.GP6,board.GP7]
+key = [digitalio.DigitalInOut(pin_name) for pin_name in buttons]
+for x in range(0,len(buttons)):
+    key[x].direction = digitalio.Direction.INPUT
+    key[x].pull = digitalio.Pull.DOWN
+
+while True:
+    if key[0].value:
+        keyboard.send(Keycode.CONTROL, Keycode.C) 
+        time.sleep(0.1)
+        
+    if key[1].value:
+        keyboard.send(Keycode.CONTROL, Keycode.V)
+        time.sleep(0.1)
+        
+    if key[2].value:
+         cc.send(ConsumerControlCode.VOLUME_INCREMENT)
+         time.sleep(0.1)
+        
+    if key[4].value:
+        cc.send(ConsumerControlCode.VOLUME_DECREMENT)
+        time.sleep(0.1)
+        
+    if key[6].value:
+        cc.send(ConsumerControlCode.MUTE)  
+        time.sleep(0.1)
+        
+    if key[5].value:
+         
+         keyboard.send(Keycode.GUI)
+         
+         keyboard.send(Keycode.GUI)
+         time.sleep(0.5)  #
+
+   
+         write_text.write('Microsoft Edge')
+         time.sleep(0.5) 
+
+   
+         keyboard.send(Keycode.ENTER)
+         time.sleep(1)  
+
+    
+         write_text.write('youtube')
+         time.sleep(2)  
+         keyboard.send(Keycode.ENTER)
+   
+
+    time.sleep(0.1)
